@@ -1,10 +1,12 @@
-
 local f = CreateFrame("Frame")
 f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end);
 f:RegisterEvent("PLAYER_LOGIN");
 
 local isWaiting = nil;
 local inCombat = nil;
+
+local waitTable = {};
+local waitFrame = nil;
 
 function f:PLAYER_LOGIN(...)
 	local class = select(2, UnitClass("player"));
@@ -15,7 +17,6 @@ end
 function f:COMBAT_LOG_EVENT_UNFILTERED(...)
 	if inCombat then return end
 	if isWaiting == 1 then return end
-	-- print "waiting set"
 	isWaiting = 1
 	CIP__wait(3, check)
 end
@@ -31,10 +32,8 @@ end
 function check()
 	if GetNumPartyMembers() == 0 and GetNumRaidMembers() == 0 then
 		isWaiting = nil
-		-- print "waiting unset"
 		return
 	end
-	-- print "should be checking now."
 	local ready = true
 	if GetNumPartyMembers() > 0 then
 		isPartyReady()
@@ -42,10 +41,6 @@ function check()
 		isRaidReady()
 	end
 	isWaiting = nil;
-	-- print "waiting unset"
-	-- for each party member
-	-- - is health at max
-	-- - is mana at max
 end
 
 function isRaidReady()
@@ -70,26 +65,16 @@ function isPartyReady()
 	for i = 1, GetNumPartyMembers() do
 		local playerName = UnitName("party"..i);
 		if UnitHealth("party"..i) < UnitHealthMax("party"..i) then
-			-- ChatFrame1:AddMessage('Not ready: ' .. playerName .. '(health)');
+			ChatFrame1:AddMessage('Not ready: ' .. playerName .. '(health)');
 			ready = false;
 		end
 		if UnitPower("party"..i) < UnitPowerMax("party"..i) then
-			-- ChatFrame1:AddMessage('Not ready: ' .. playerName .. '(power)');
+			ChatFrame1:AddMessage('Not ready: ' .. playerName .. '(power)');
 			ready = false;
 		end
 	end
 	return ready;
 end
-
-StaticPopupDialogs["TYLER_IS_A_NUB"] = {
-  text = "Your group is ready.",
-  button1 = OKAY, timeout = 30, hideOnEscape = 1, showAlert = 1
-};
-
--- pragma mark -
-
-local waitTable = {};
-local waitFrame = nil;
 
 function CIP__wait(delay, func, ...)
   if(type(delay)~="number" or type(func)~="function") then
