@@ -1,0 +1,5 @@
+## Interface: 40000
+## Title: Can I Pull
+## Notes: "A small addon to help you know when it is safe to pull when in groups."
+## Version: 0.1
+CIP.lua
